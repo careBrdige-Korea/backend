@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ContactType {
+  KAKAOTALK
+  WHATSAPP
+  EMAIL
+}
+
+enum ConsultationStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum BookingStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// Models
+model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  password      String
+  role          Role           @default(USER)
+  refreshToken  String?        @map("refresh_token")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  consultations Consultation[]
+
+  @@map("users")
+}
+
+model Hospital {
+  id                Int              @id @default(autoincrement())
+  name              String
+  region            String
+  department        String
+  isForeignFriendly Boolean          @default(true) @map("is_foreign_friendly")
+  createdAt         DateTime         @default(now()) @map("created_at")
+  recommendations   Recommendation[]
+
+  @@map("hospitals")
+}
+
+model Consultation {
+  id              BigInt             @id @default(autoincrement())
+  userId          Int?               @map("user_id")
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userNickname    String             @map("user_nickname")
+  contactType     ContactType        @map("contact_type")
+  contactInfo     String             @map("contact_info")
+  nationality     String?
+  language        String?
+  location        String?
+  symptoms        String?
+  preferredAt     DateTime?          @map("preferred_at")
+  status          ConsultationStatus @default(NEW)
+  adminMemo       String?            @map("admin_memo")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  recommendations Recommendation[]
+
+  @@map("consultations")
+}
+
+model Recommendation {
+  id             BigInt        @id @default(autoincrement())
+  consultationId BigInt        @map("consultation_id")
+  consultation   Consultation  @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  hospitalId     Int           @map("hospital_id")
+  hospital       Hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  isRecommended  Boolean       @default(true) @map("is_recommended")
+  isSelected     Boolean       @default(false) @map("is_selected")
+  selectedAt     DateTime?     @map("selected_at")
+  bookingStatus  BookingStatus @default(PENDING) @map("booking_status")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  @@unique([consultationId, hospitalId], name: "unique_consultation_hospital")
+  @@map("recommendations")
+}

@@ -6,6 +6,11 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Dummy env for prisma generate (no actual DB connection needed)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV DIRECT_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+
 RUN npx prisma generate
 RUN npm run build
 

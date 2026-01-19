@@ -39,6 +39,7 @@ enum BookingStatus {
 model User {
   id            Int            @id @default(autoincrement())
   email         String         @unique
+  name          String         @default("")
   password      String
   role          Role           @default(USER)
   refreshToken  String?        @map("refresh_token")

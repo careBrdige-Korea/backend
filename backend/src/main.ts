@@ -13,6 +13,7 @@ async function bootstrap() {
   app.enableCors({
     origin: process.env.CORS_ORIGINS?.split(',') || [
       'http://localhost:3000',
+      'http://localhost:5173',
       'https://carebridgekorea.netlify.app',
     ],
     credentials: true,
